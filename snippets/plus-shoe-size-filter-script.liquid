@@ -1,0 +1,39 @@
+<script>
+  window.Plus = window.Plus || {};
+  Plus.sizeFilterSort = (function() {  
+    const collectionFilters = document.getElementById('plus-collection-filter');
+    const sizeOptions = collectionFilters.getElementsByTagName("li");
+    console.log("rrr", sizeOptions);
+    const sizes = [];
+    for (let i=0; i<sizeOptions.length; i++) {
+      const value = sizeOptions[i].getElementsByTagName("label")[0].getElementsByTagName("div")[0].innerHTML.trim();
+      const size = {}; 
+      if(value.split(" ").length > 1) {
+        size["prefix"] = value.split(" ")[0].trim();
+        size["value"] = parseFloat(value.split(" ")[1]);
+      } else {
+        size["prefix"] = "";
+        size["value"] = parseFloat(value.split(" ")[0]);
+      }
+      sizes.push(size);    
+    }
+                    
+    sizes.sort((a,b) => {
+      if(a.value>b.value) {
+        return 1;
+      }
+      return -1;  
+    });
+    
+    for (let i in sizes){
+      const sizeId = sizeOptions[i].getElementsByTagName("label")[0].getElementsByTagName("input")[0].id;
+      const sizeIdSplit = sizeId.split("--");
+      const valueEncoded = encodeURIComponent(`${sizes[i].prefix.trim()} ${sizes[i].value.toString()}`.trim());
+      sizeOptions[i].getElementsByTagName("label")[0].htmlFor = `${sizeIdSplit[0]}--${sizeIdSplit[1]}--${valueEncoded}`;
+      sizeOptions[i].getElementsByTagName("label")[0].getElementsByTagName("div")[0].innerHTML = `${sizes[i].prefix} ${sizes[i].value.toString()}`;
+      sizeOptions[i].getElementsByTagName("label")[0].getElementsByTagName("input")[0].id = `${sizeIdSplit[0]}--${sizeIdSplit[1]}--${valueEncoded}`;
+      sizeOptions[i].getElementsByTagName("label")[0].getElementsByTagName("input")[0].value = `${sizes[i].prefix} ${sizes[i].value.toString()}`.trim();
+    }  
+  });
+  document.addEventListener("DOMContentLoaded", Plus.sizeFilterSort());
+</script>

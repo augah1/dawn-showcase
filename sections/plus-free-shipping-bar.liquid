@@ -1,0 +1,92 @@
+{%- for block in section.blocks -%}
+  {%- case block.type -%}
+    {%- when 'plus-free-shipping' -%}
+      {%- liquid
+        assign shipping_threshold = block.settings.free_shipping_threshold | times: 100
+        assign total_price = cart.total_price
+        assign currency_symbol = cart.currency.symbol
+        assign amount_left = shipping_threshold | minus: total_price
+        assign money_amount_left = amount_left | money
+      -%}
+      <div class="announcement-bar color-{{ block.settings.color_scheme }} gradient" role="region" aria-label="{{ 'plus.plus-free-shipping-bar' | t }}" {{ block.shopify_attributes }}>
+        <div class="page-width">
+          <p class="announcement-bar__message h5">
+            <span id="free-shipping-message">
+              {% if amount_left <= 0 %}
+                {{ 'plus.plus_free_shipping_reached' | t }}
+              {% else %}
+                {{ 'plus.plus_free_shipping_amount_html' | t: free_shipping_amount: money_amount_left }}
+              {% endif %}
+            </span>
+          </p>                
+        </div>
+      </div>
+    {%- endcase -%}
+{%- endfor -%}
+
+{% schema %}
+  {
+    "name": "t:sections.plus-free-shipping-bar.name",
+    "max_blocks": 1,
+    "blocks": [
+    {		
+      "type": "plus-free-shipping",
+      "name": "t:sections.plus-free-shipping-bar.blocks.plus-free-shipping.name",
+      "limit": 1,
+      "settings": [
+        {
+        "type": "number",
+        "id": "free_shipping_threshold",
+        "label": "t:sections.plus-free-shipping-bar.blocks.plus-free-shipping.settings.free_shipping_threshold.label",
+        "default": 100
+        },
+      {
+        "type": "color_scheme",
+        "id": "color_scheme",
+        "label": "t:sections.all.colors.label",
+        "default": "scheme-4"
+      },
+      ]
+    }
+  ],
+  "default": {
+    "blocks": [
+      {
+        "type": "plus-free-shipping"
+      }
+    ]
+  }
+  }
+{% endschema %}
+
+<script>
+  window.Plus = window.Plus || {};
+  Plus.freeShippingDetails = {
+    threshold: {{ shipping_threshold | json }},
+    currencySymbol: {{ currency_symbol | json }},
+    freeShippingReached: `{{ 'plus.plus_free_shipping_reached' | t }}`,
+    freeShippingAmount: `{{ 'plus.plus_free_shipping_amount_html' | t: free_shipping_amount: money_amount_left }}`
+  }
+  
+  Plus.handleAmountLeft = function() {
+    fetch(window.Shopify.routes.root + 'cart.js')
+     .then((response) => response.json())
+     .then((response) => {             
+      const freeShippingMessage = document.getElementById('free-shipping-message');
+      let totalPrice = response.total_price;
+      amountLeft = ((Plus.freeShippingDetails.threshold - totalPrice) * 0.01).toFixed(2);      
+      if (amountLeft <= 0) {
+        amountLeft = 0;
+        freeShippingMessage.innerHTML = Plus.freeShippingDetails.freeShippingReached;
+      }
+      else {        
+        freeShippingMessage.innerHTML = Plus.freeShippingDetails.freeShippingAmount;
+        const freeShippingText = document.getElementById('free-ship-amount');
+        freeShippingText.textContent = `${Plus.freeShippingDetails.currencySymbol + amountLeft}`;
+      }
+     })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  }
+</script>

@@ -1,0 +1,106 @@
+{% assign plus_privacy_consent_text_t = 'plus.newsletter.privacy_consent_text' | t %}
+{% assign plus_privacy_consent_error_text_t = 'plus.newsletter.privacy_consent_error_text' | t %}
+{% assign consent_checkbox_message_t = 'plus.newsletter.consent_checkbox_message' | t %}    
+
+<style>
+  .plus-privacy-consent {
+    display: flex;
+    align-items: center; 
+    margin-bottom: 20px;
+    color: var(--text-color);
+  }
+  .plus-privacy-consent input[type="checkbox"] {
+    margin-bottom: 0;
+  }
+  .plus-privacy-consent-error label {
+    padding: 0;
+  }
+  .plus-privacy-consent-error {
+    margin-top: 15px;
+    color: var(--error-color);
+    text-align: center;
+    margin: 0 auto;
+  }
+  .plus-privacy-consent-error-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .plus-privacy-consent label.label {
+    line-height: 1.2;
+    text-align: left;
+    margin-left: 7px;
+  }  
+  .accepts-marketing.plus-privacy-consent {
+    align-items: flex-start;
+  }  
+  .plus-privacy-consent input[type="checkbox"] {
+    margin: 3px 0 0 0;
+  }
+  .newsletter-form__button.field__button[disabled] {
+    opacity: 0.4 !important;
+  }   
+</style>
+
+<div class="accepts-marketing plus-privacy-consent">
+  <input 
+    type="hidden"
+    checked 
+    name="customer[accepts_marketing]" 
+    value="true"
+  />
+  <input
+    required 
+    id="accepts-Marketing"
+    type="checkbox"
+    checked
+    name="customer[accepts_marketing]"
+    value="true"
+  />
+  <input type="hidden" name="customer[note][Consent]" value="{{ consent_checkbox_message_t }}">
+  <label for="accepts-marketing" class="label">
+    {{ plus_privacy_consent_text_t }}
+  </label>
+</div>
+
+<script>
+  function plusCheckInputs() {
+    const form = document.querySelector('.newsletter form');
+    emailField = form.querySelector('[type="email"][name="contact[email]"]');
+    formSubmit = form.querySelector('[type="submit"]'),
+    acceptsConsentCheckboxEnabled = {{ settings.plus_enable_newsletter_checkbox }};
+    acceptsConsentSubmit = form.querySelector('.newsletter-form__field-wrapper');          
+    acceptsConsentCheckbox = form.querySelector('[type="checkbox"][name="customer[accepts_marketing]"]');
+    acceptsConsentWarningHTML = `<div class="plus-privacy-consent-error-div"><p class="plus-privacy-consent-error plus-privacy-consent">{{ plus_privacy_consent_error_text_t }}</p></div>`;
+    acceptsConsentCheckbox.disabled = false;
+    formSubmit.disabled = false;
+    acceptsConsentCheckbox.addEventListener('change', function() {
+      if (this.checked && form.querySelectorAll('.plus-privacy-consent-error').length > 0) {          
+        document.querySelector('.plus-privacy-consent-error-div').remove();
+        formSubmit.disabled = false;
+      } else if (!this.checked && document.querySelectorAll('.plus-privacy-consent-error-div').length == 0) {          
+        acceptsConsentSubmit.insertAdjacentHTML('afterend', acceptsConsentWarningHTML);
+        formSubmit.disabled = true;
+      }
+    });
+    form.addEventListener('keypress', function(e) {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        this.querySelector('[type="submit"]').dispatchEvent(new Event('click'));
+      }
+    });
+    formSubmit.addEventListener('click', function(e) {
+      let checkboxIsChecked = !acceptsConsentCheckboxEnabled;
+      if (acceptsConsentCheckbox.checked && emailField != blank) {
+        checkboxIsChecked = true;
+      }
+      if (checkboxIsChecked) {
+        this.closest('.newsletter form').submit();
+      }
+      else if (!checkboxIsChecked && document.querySelectorAll('.plus-privacy-consent-error').length == 0) {
+        acceptsConsentSubmit.insertAdjacentHTML('afterend', acceptsConsentWarningHTML);
+        }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', plusCheckInputs);
+</script>
