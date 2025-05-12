@@ -1,4 +1,4 @@
-This is a customized version of Shopify's Dawn theme that showcases features added by Adanna Ugah. It has been built with optimization and flexibility in mind, and aligned with current web standards.
+This is a customized version of Shopify's Dawn theme that showcases some features added by Adanna Ugah. It has been built with optimization and flexibility in mind, and aligned with current web standards.
 
 ## Customizations
 
